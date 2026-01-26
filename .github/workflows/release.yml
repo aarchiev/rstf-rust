@@ -1,13 +1,12 @@
-name: Cross-Platform Release (TESTING)
+name: Cross-Platform Release
 
 permissions:
   contents: write
 
 on:
   push:
-    branches:
-      - "ci/9-test-android-ndk-linking"
-  workflow_dispatch:
+    tags:
+      - "v*"
 
 jobs:
   publish:
@@ -108,9 +107,9 @@ jobs:
           fi
           mv "$BIN_PATH" "${{ matrix.asset_name }}"
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: binary-${{ matrix.asset_name }}
-          path: ${{ matrix.asset_name }}
-          retention-days: 1
+          files: ${{ matrix.asset_name }}
+          fail_on_unmatched_files: true
+
