@@ -1,4 +1,3 @@
-
 use anyhow::{anyhow, Context, Result};
 use argon2::Argon2;
 use chacha20poly1305::aead::stream::{
@@ -59,7 +58,6 @@ enum Commands {
     },
 }
 
-// Credential Processing Helper
 fn process_credentials(salt: &[u8], keyfile_path: Option<PathBuf>) -> Result<[u8; 32]> {
     let mut password =
         rpassword::prompt_password("Enter password: ").context("Failed to read password")?;
@@ -93,7 +91,6 @@ struct EncryptedWriter<W: Write> {
     buffer: Vec<u8>,
 }
 
-// EncryptedWriter Implementation
 impl<W: Write> EncryptedWriter<W> {
     fn new(inner: W, encryptor: EncryptorBE32<ChaCha20Poly1305>) -> Self {
         Self {
@@ -118,7 +115,6 @@ impl<W: Write> EncryptedWriter<W> {
     }
 }
 
-// Write Trait for EncryptedWriter
 impl<W: Write> Write for EncryptedWriter<W> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let mut total_written = 0;
@@ -142,7 +138,6 @@ impl<W: Write> Write for EncryptedWriter<W> {
     }
 }
 
-// Drop Trait for EncryptedWriter
 impl<W: Write> Drop for EncryptedWriter<W> {
     fn drop(&mut self) {
         let _ = self.flush_chunk(true);
@@ -157,7 +152,6 @@ struct DecryptedReader<R: Read> {
     eof: bool,
 }
 
-// DecryptedReader Implementation
 impl<R: Read> DecryptedReader<R> {
     fn new(inner: R, decryptor: DecryptorBE32<ChaCha20Poly1305>) -> Self {
         Self {
@@ -170,7 +164,6 @@ impl<R: Read> DecryptedReader<R> {
     }
 }
 
-// Read Trait for DecryptedReader
 impl<R: Read> Read for DecryptedReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         if self.offset >= self.buffer.len() {
@@ -222,7 +215,6 @@ impl<R: Read> Read for DecryptedReader<R> {
     }
 }
 
-// Main Entry Point
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
