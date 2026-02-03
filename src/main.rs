@@ -50,6 +50,9 @@ enum Commands {
         input: PathBuf,
         #[arg(long, short = 'k')]
         keyfile: Option<PathBuf>,
+        /// Force overwrite without confirmation prompt
+        #[arg(long, short = 'f')]
+        force: bool,
     },
     List {
         input: PathBuf,
@@ -224,7 +227,7 @@ fn main() -> Result<()> {
             level,
             keyfile,
         } => pack(input, wipe, level, keyfile),
-        Commands::Unpack { input, keyfile } => unpack(input, keyfile),
+        Commands::Unpack { input, keyfile, force } => unpack(input, keyfile, force),
         Commands::List { input, keyfile } => list(input, keyfile),
     }
 }
@@ -328,8 +331,22 @@ fn pack(input_path: PathBuf, wipe: bool, level: i32, keyfile: Option<PathBuf>) -
     Ok(())
 }
 
+/// Prompts user for confirmation before overwriting existing files.
+/// Returns true if user confirms, false otherwise.
+fn confirm_overwrite(path: &str) -> Result<bool> {
+    print!("'{}' already exists. Overwrite? (y/N): ", path);
+    std::io::stdout().flush()?;
+
+    let mut input = String::new();
+    std::io::stdin()
+        .read_line(&mut input)
+        .context("Failed to read input")?;
+
+    Ok(input.trim().to_lowercase() == "y")
+}
+
 // Unpack Function
-fn unpack(input_path: PathBuf, keyfile: Option<PathBuf>) -> Result<()> {
+fn unpack(input_path: PathBuf, keyfile: Option<PathBuf>, force: bool) -> Result<()> {
     let mut input_file = File::open(&input_path).context("Failed to open .rstf")?;
 
     let mut salt = [0u8; 16];
@@ -358,6 +375,15 @@ fn unpack(input_path: PathBuf, keyfile: Option<PathBuf>) -> Result<()> {
     let header: RstfHeader = bincode::deserialize(&header_data)?;
 
     println!("Unpacking: {}", header.original_name);
+
+    // Check if output already exists and confirm overwrite unless --force is set
+    let output_path = PathBuf::from(&header.original_name);
+    if output_path.exists() && !force {
+        if !confirm_overwrite(&header.original_name)? {
+            println!("Unpack cancelled. No files were modified.");
+            return Ok(());
+        }
+    }
 
     let mut zstd_reader = ZstdDecoder::new(crypto_reader)?;
 
