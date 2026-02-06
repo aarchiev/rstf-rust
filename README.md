@@ -49,6 +49,10 @@ chmod +x $PREFIX/bin/rstf
 ```bash
 rstf --version
 ```
+
+```bash
+rstf --help
+```
 ###### B. For x86_64 emulators (if using Android emulator):
 ```bash
 wget https://github.com/aarchiev/rstf-rust/releases/latest/download/rstf-android-x86_64 -O $PREFIX/bin/rstf
