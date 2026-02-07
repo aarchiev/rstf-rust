@@ -295,4 +295,4 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-Build with love for everyone.
+Build with <3 for everyone XD
