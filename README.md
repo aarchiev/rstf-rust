@@ -256,6 +256,8 @@ Thank you for contributing to **RSTF**!
 ## Important Security Notice
 **This software contains no backdoors.** Loss of your password or keyfile will make data irrecoverable. RSTF's cryptography is designed to resist brute-force attacks. Always secure backups and use strong, unique passwords.
 
+[security](SECURITY.md)
+
 ---
 
 ## Author
